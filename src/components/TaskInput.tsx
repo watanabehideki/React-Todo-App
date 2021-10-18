@@ -1,34 +1,48 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch } from "react-redux";
 import { addTask } from "../modules/tasksModule";
+import { useForm } from "react-hook-form";
+
+type FormData = {
+  title: string;
+};
 
 const TaskInput: React.FC = () => {
   const dispatch = useDispatch();
-  const [inputTitle, setInputTitle] = useState("");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputTitle(e.target.value);
-  };
+  const { register, handleSubmit, errors, reset } = useForm<FormData>();
 
-  const handleSubmit = () => {
-    dispatch(addTask(inputTitle));
-    setInputTitle("");
+  const handleOnSubmit = (data: FormData) => {
+    dispatch(addTask(data.title));
+    reset();
   };
 
   return (
-    <div className="input-form">
+    <form onSubmit={handleSubmit(handleOnSubmit)} className="input-form">
       <div className="inner">
         <input
           type="text"
+          name="title"
           className="input"
-          value={inputTitle}
-          onChange={handleInputChange}
+          placeholder="TODOを入力してください"
+          ref={register({
+            required: "タイトルは必ず入力してください",
+            minLength: {
+              value: 3,
+              message: "タイトルは3文字以上で入力してください",
+            },
+            maxLength: {
+              value: 30,
+              message: "タイトルは30文字以内で入力してください",
+            },
+          })}
         />
-        <button onClick={handleSubmit} className="btn is-primary">
-          追加
-        </button>
+        <button className="btn is-primary">追加</button>
+        {errors.title && (
+          <span className="error-message">{errors.title.message}</span>
+        )}
       </div>
-    </div>
+    </form>
   );
 };
 
